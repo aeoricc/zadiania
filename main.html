@@ -1,0 +1,2657 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0b1112" />
+    <title>Задания</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=PT+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0b1112;
+        --panel: #111a1c;
+        --panel2: #162225;
+        --card: #0e1618;
+        --stage: #0d1517;
+        --moss: #6b9383;
+        --gold: #c2a878;
+        --gold-hi: #f0d9a8;
+        --gold-soft: rgba(194, 168, 120, 0.16);
+        --text: #d4e0de;
+        --muted: #798c89;
+        --line: #223336;
+        --line2: #31474a;
+        --ok: #8ac47a;
+        --err: #c07a6c;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font: 16px/1.6 "PT Serif", serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+        padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: -1;
+        background:
+          radial-gradient(circle at 12% 8%, rgba(107, 147, 131, 0.07), transparent 42%),
+          radial-gradient(circle at 88% 36%, rgba(194, 168, 120, 0.04), transparent 42%),
+          radial-gradient(circle at 50% 100%, rgba(174, 189, 189, 0.05), transparent 55%);
+      }
+      .fog {
+        position: fixed;
+        top: -25%;
+        left: -25%;
+        width: 150%;
+        height: 150%;
+        pointer-events: none;
+        filter: blur(30px);
+        mix-blend-mode: screen;
+        opacity: 0.85;
+      }
+      .f1 { background: radial-gradient(ellipse 55% 35% at 20% 30%, rgba(215, 226, 224, 0.07), transparent 70%); }
+      .f2 { background: radial-gradient(ellipse 45% 30% at 80% 65%, rgba(194, 168, 120, 0.06), transparent 70%); }
+      .f3 { background: radial-gradient(ellipse 60% 40% at 55% 90%, rgba(107, 147, 131, 0.08), transparent 70%); }
+      .vignette {
+        position: fixed;
+        inset: 0;
+        z-index: 5;
+        pointer-events: none;
+        background: radial-gradient(ellipse 75% 65% at 50% 45%, transparent 45%, rgba(6, 9, 10, 0.55) 100%);
+      }
+      .firefly {
+        position: fixed;
+        width: 2px;
+        height: 2px;
+        background: var(--gold);
+        opacity: 0;
+        animation: drift 10s ease-in-out infinite;
+        pointer-events: none;
+        z-index: 1;
+        box-shadow: 0 0 6px 1px rgba(194, 168, 120, 0.6);
+      }
+      @keyframes drift {
+        0% { opacity: 0; transform: translate(0, 0); }
+        50% { opacity: 0.55; transform: translate(-15px, -22px); }
+        100% { opacity: 0; transform: translate(-5px, -42px); }
+      }
+      @keyframes shake {
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+      }
+      h1, h3, .display { font-family: "Cormorant Garamond", serif; font-weight: 400; }
+      .wrap {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: calc(36px + env(safe-area-inset-top, 0px)) 16px 0;
+        position: relative;
+        z-index: 2;
+      }
+      .list { display: flex; flex-direction: column; gap: 8px; }
+      .item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 14px 16px;
+        background: var(--panel2);
+        border: 1px solid var(--line);
+        color: var(--text);
+        font: 15px "PT Serif", serif;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .item:active { background: var(--card); }
+      .item.done { color: var(--muted); }
+      .item .mark { color: var(--ok); }
+      .all {
+        margin-top: 22px;
+        text-align: center;
+        font: 22px "Cormorant Garamond", serif;
+        color: var(--gold);
+      }
+      .reset-all {
+        display: block;
+        margin: 36px auto 0;
+        padding: 8px 12px;
+        background: none;
+        border: none;
+        color: var(--muted);
+        opacity: 0.45;
+        font: 10px "PT Mono", monospace;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .reset-all:hover { color: var(--err); opacity: 1; }
+
+      .backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(6, 10, 11, 0.88);
+        display: none;
+        align-items: flex-start;
+        justify-content: center;
+        z-index: 1000;
+        padding: 24px 16px;
+        overflow-y: auto;
+        backdrop-filter: blur(6px);
+      }
+      .backdrop.open { display: flex; }
+      .modal {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        padding: 18px 14px 12px;
+        width: 100%;
+        max-width: 560px;
+        margin: auto;
+        flex-shrink: 0;
+        position: relative;
+        box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.85), 0 0 0 1px var(--gold-soft);
+      }
+      .modal::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 2px;
+        width: 64px;
+        background: linear-gradient(90deg, var(--gold), transparent);
+      }
+      .close {
+        position: absolute;
+        top: 14px;
+        right: 16px;
+        background: none;
+        border: none;
+        padding: 6px;
+        color: var(--muted);
+        font-size: 22px;
+        line-height: 1;
+        cursor: pointer;
+      }
+      .close:hover { color: var(--gold); }
+      .head { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; padding-right: 24px; }
+      .icon {
+        width: 34px;
+        height: 34px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--panel2);
+        border: 1px solid var(--gold-soft);
+        color: var(--gold);
+        font-size: 15px;
+      }
+      .head h3 { font-size: 19px; color: var(--gold); margin: 0; }
+
+      .tabs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+      .tab {
+        flex: 1 1 44px;
+        padding: 9px 4px;
+        background: none;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        font: 11px "PT Mono", monospace;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+      .tab:hover:not(:disabled) { border-color: rgba(194, 168, 120, 0.4); color: var(--gold); }
+      .tab:disabled { opacity: 0.3; cursor: not-allowed; }
+      .tab.done { border-color: var(--ok); color: var(--ok); background: rgba(138, 196, 122, 0.14); }
+      .tab.active { border-color: var(--gold); color: var(--gold); background: rgba(194, 168, 120, 0.1); }
+      .legend, .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 8px;
+        margin-bottom: 6px;
+        font: 10px "PT Mono", monospace;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .legend span { display: inline-flex; align-items: center; gap: 5px; }
+      .legend i {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+      }
+      .chips span {
+        padding: 4px 9px;
+        border: 1px solid rgba(194, 168, 120, 0.25);
+        color: var(--gold);
+        background: rgba(194, 168, 120, 0.08);
+      }
+      .chips .done {
+        color: var(--ok);
+        border-color: rgba(138, 196, 122, 0.5);
+        background: rgba(138, 196, 122, 0.12);
+      }
+      .chips .no {
+        color: var(--err);
+        border-color: rgba(192, 122, 108, 0.4);
+        background: rgba(192, 122, 108, 0.08);
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 6px;
+        font: 10px/1.4 "PT Mono", monospace;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .row b { color: var(--gold); font-weight: 400; }
+      .row b.warn { color: #e05a30; }
+      .stage {
+        display: flex;
+        justify-content: center;
+        background: radial-gradient(circle at 50% 45%, #0f1b20 0%, #08100e 100%);
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        padding: 10px;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .stage.col {
+        display: block;
+        user-select: text;
+        -webkit-user-select: text;
+        background: #101a1c;
+        border-color: rgba(60, 80, 84, 0.5);
+        box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.3);
+      }
+      .stage.bare { padding: 0; background: none; border: none; border-radius: 0; }
+      .stage.bare canvas { border: none; }
+      .stage canvas {
+        display: block;
+        max-width: 100%;
+        border: 1px solid #1a2528;
+        cursor: crosshair;
+        touch-action: manipulation;
+      }
+      .drag .stage canvas { touch-action: none; }
+      .acts { display: flex; gap: 8px; margin-top: 8px; }
+      .btn {
+        flex: 1;
+        padding: 12px 10px;
+        background: none;
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        color: var(--muted);
+        font: 11px "PT Mono", monospace;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .btn:hover:not(:disabled) {
+        border-color: rgba(194, 168, 120, 0.4);
+        color: var(--gold);
+        background: rgba(194, 168, 120, 0.04);
+      }
+      .btn.primary { background: var(--gold); border-color: var(--gold); color: var(--bg); font-weight: 700; }
+      .btn.primary:hover:not(:disabled) { background: #d4ba8a; color: var(--bg); }
+      .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+      .status {
+        margin-top: 8px;
+        min-height: 38px;
+        padding: 10px 12px;
+        font-size: 12px;
+        line-height: 1.45;
+        border-left: 3px solid var(--line);
+        border-radius: 0 3px 3px 0;
+        background: var(--stage);
+        color: var(--muted);
+      }
+      .status .sub {
+        display: block;
+        margin-top: 4px;
+        font-size: 10.5px;
+        letter-spacing: 0.05em;
+        opacity: 0.85;
+      }
+      .status.good { color: var(--ok); border-color: var(--ok); background: rgba(138, 196, 122, 0.07); }
+      .status.bad { color: var(--err); border-color: var(--err); background: rgba(192, 122, 108, 0.07); }
+      .final {
+        padding: 28px 18px;
+        text-align: center;
+        border: 1px solid rgba(194, 168, 120, 0.35);
+        border-radius: 3px;
+        background: radial-gradient(ellipse 90% 40% at 50% 0%, rgba(194, 168, 120, 0.1), transparent 70%);
+      }
+      .final .big { font: 28px "Cormorant Garamond", serif; color: var(--gold); margin-bottom: 6px; }
+      .final .small { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+      .final .btn { width: 100%; }
+
+      .grid {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        width: 100%;
+        background: #080c0e;
+        border: 1px solid rgba(60, 80, 84, 0.5);
+      }
+      .grid::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(ellipse 75% 75% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
+      }
+      .card {
+        position: relative;
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        background: #0a1114;
+        border: 1px solid rgba(60, 80, 84, 0.26);
+        cursor: pointer;
+      }
+      .card:nth-child(even) { background: #0d1418; }
+      .card img {
+        max-width: 88%;
+        max-height: 88%;
+        object-fit: contain;
+        pointer-events: none;
+        filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.45));
+      }
+      .card span { font-size: 12px; text-align: center; color: var(--muted); }
+      .card:hover { background: rgba(194, 168, 120, 0.07); }
+      .card.selected {
+        background: rgba(194, 168, 120, 0.09);
+        box-shadow: inset 0 0 0 2px rgba(194, 168, 120, 0.9);
+      }
+      .card.locked { cursor: default; pointer-events: none; }
+      .card.right {
+        background: rgba(138, 196, 122, 0.08);
+        box-shadow: inset 0 0 0 2px rgba(138, 196, 122, 0.7);
+      }
+      .card.right::after {
+        content: "✓";
+        position: absolute;
+        right: 7px;
+        top: 4px;
+        color: var(--ok);
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .grid.shake { animation: shake 0.4s; }
+
+      .riddle { padding: 14px 4px 4px; text-align: center; }
+      .riddle p { margin: 0 0 16px; font: 500 20px/1.45 "Cormorant Garamond", serif; }
+      .riddle.shake { animation: shake 0.4s; }
+      .field {
+        width: 100%;
+        padding: 10px 12px;
+        background: #0c1416;
+        border: 1px solid rgba(60, 80, 84, 0.5);
+        color: var(--text);
+        text-align: center;
+        font: 16px "PT Serif", serif;
+      }
+      .field:focus { outline: none; border-color: var(--gold-soft); }
+      .solved .field { color: var(--gold); border-color: var(--gold-soft); background: var(--gold-soft); }
+      .field.word {
+        flex: 1;
+        min-width: 0;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        font: 18px "PT Mono", monospace;
+        color: var(--gold);
+        background: #141f22;
+      }
+      .letters {
+        margin-top: 10px;
+        padding: 12px 12px 14px;
+        background: #101a1c;
+        border: 1px solid rgba(60, 80, 84, 0.5);
+        box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.3);
+        border-radius: 3px;
+      }
+      .tiles-label {
+        text-align: center;
+        font: 10px "PT Mono", monospace;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .tiles { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; }
+      .tile {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font: 22px "Cormorant Garamond", serif;
+        color: var(--muted);
+        background: #141f22;
+        border: 1px solid rgba(60, 80, 84, 0.5);
+        border-radius: 2px;
+      }
+      .tile.on {
+        color: var(--gold);
+        border-color: rgba(194, 168, 120, 0.5);
+        background: rgba(194, 168, 120, 0.08);
+      }
+
+      @media (max-width: 600px) {
+        .backdrop { padding: 6px; align-items: center; }
+        .modal { padding: 12px 10px 8px; }
+        .head { gap: 8px; margin-bottom: 8px; }
+        .icon { width: 28px; height: 28px; font-size: 13px; }
+        .head h3 { font-size: 16px; }
+        .stage { padding: 6px; }
+        .btn { min-height: 38px; font-size: 10px; letter-spacing: 0.06em; }
+        .tab { font-size: 10px; padding: 6px 4px; }
+        .card { padding: 4px; }
+        .tile { width: 32px; height: 32px; font-size: 16px; }
+        .status { min-height: 34px; padding: 8px 10px; font-size: 11.5px; }
+        .riddle { padding: 10px 2px 2px; }
+        .riddle p { font-size: 18px; }
+      }
+    </style>
+  </head>
+  <body>
+    <span class="fog f1"></span><span class="fog f2"></span><span class="fog f3"></span>
+    <span class="firefly" style="top: 20%; left: 75%"></span>
+    <span class="firefly" style="top: 60%; left: 85%; animation-delay: 2.5s"></span>
+    <span class="firefly" style="top: 75%; left: 65%; animation-delay: 7.5s"></span>
+    <div class="vignette"></div>
+
+    <div class="wrap">
+      <div class="list" id="list"></div>
+      <button class="reset-all" id="resetAll">
+        Сбросить прогресс
+      </button>
+    </div>
+
+    <div class="backdrop" id="bd">
+      <div class="modal">
+        <button class="close" id="close">✕</button>
+        <div id="body"></div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        const SEED = 170717,
+          ROM = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
+        const $ = (s, r = document) => r.querySelector(s);
+        const load = (k, d) => {
+          try {
+            const v = JSON.parse(localStorage.getItem(k));
+            return v == null ? d : v;
+          } catch (e) {
+            return d;
+          }
+        };
+        const save = (k, v) => {
+          try {
+            localStorage.setItem(k, JSON.stringify(v));
+          } catch (e) {}
+        };
+        const rng = (s) => {
+          s = s >>> 0 || 1;
+          return () => {
+            s = (s + 0x6d2b79f5) | 0;
+            let t = Math.imul(s ^ (s >>> 15), 1 | s);
+            t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+          };
+        };
+        const shuf = (a, r) => {
+          a = a.slice();
+          for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(r() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+          }
+          return a;
+        };
+        const watch = (el, f) => new ResizeObserver(f).observe(el);
+        const btn = (t, c, f) => {
+          const e = document.createElement("button");
+          e.className = "btn " + c;
+          e.textContent = t;
+          e.onclick = f;
+          return e;
+        };
+
+        const drawPaw = (c, x, y, s, color) => {
+          c.save();
+          c.translate(x, y + s * 0.1);
+          c.scale(s, s);
+          c.fillStyle = color;
+          c.beginPath();
+          c.moveTo(0, 0.05);
+          c.bezierCurveTo(0.45, 0.05, 0.85, 0.4, 0.8, 0.75);
+          c.bezierCurveTo(0.75, 1.05, 0.4, 1.0, 0, 0.9);
+          c.bezierCurveTo(-0.4, 1.0, -0.75, 1.05, -0.8, 0.75);
+          c.bezierCurveTo(-0.85, 0.4, -0.45, 0.05, 0, 0.05);
+          c.fill();
+          [
+            [-0.95, -0.2, -0.5],
+            [-0.38, -0.8, -0.15],
+            [0.38, -0.8, 0.15],
+            [0.95, -0.2, 0.5],
+          ].forEach(([ex, ey, r]) => {
+            c.beginPath();
+            c.ellipse(ex, ey, 0.25, 0.36, r, 0, 7);
+            c.fill();
+          });
+          c.restore();
+        };
+        const pawImg = new Image();
+        pawImg.src = "img/paw.png";
+        const pawBg = new Image();
+        pawBg.src = "img/paw.png";
+        const tintCache = {};
+        const pawTint = (color) => {
+          if (!pawImg.complete || !pawImg.naturalWidth) return null;
+          if (tintCache[color]) return tintCache[color];
+          const c = document.createElement("canvas");
+          c.width = pawImg.naturalWidth;
+          c.height = pawImg.naturalHeight;
+          const g = c.getContext("2d");
+          g.drawImage(pawImg, 0, 0);
+          g.globalCompositeOperation = "source-in";
+          g.fillStyle = color;
+          g.fillRect(0, 0, c.width, c.height);
+          return (tintCache[color] = c);
+        };
+        const drawPawImg = (c, x, y, s, color, ang) => {
+          c.save();
+          c.translate(x, y);
+          c.rotate(ang || 0);
+          const t = pawTint(color);
+          if (!t) drawPaw(c, 0, 0, s, color);
+          else {
+            const w = s * 2.2,
+              h = (w * t.height) / t.width;
+            c.drawImage(t, -w / 2, -h / 2, w, h);
+          }
+          c.restore();
+        };
+
+        const DPR = () => Math.min(devicePixelRatio || 1, 2);
+        const fit = (cv, w, h) => {
+          const d = DPR();
+          cv.width = Math.round(w * d);
+          cv.height = Math.round(h * d);
+          cv.style.width = w + "px";
+          cv.style.height = h + "px";
+          const c = cv.getContext("2d");
+          c.setTransform(d, 0, 0, d, 0, 0);
+          return c;
+        };
+        const mk = (w, h, k) => {
+          const c = document.createElement("canvas");
+          c.width = Math.max(1, Math.round(w * k));
+          c.height = Math.max(1, Math.round(h * k));
+          const g = c.getContext("2d");
+          g.setTransform(k, 0, 0, k, 0, 0);
+          return [c, g];
+        };
+        const SPR = {};
+        const spr = (rgb, size = 96, core = 0) => {
+          const k = rgb + "|" + size + "|" + core;
+          if (SPR[k]) return SPR[k];
+          const [c, g] = mk(size, size, 1),
+            r = size / 2,
+            gr = g.createRadialGradient(r, r, 0, r, r, r);
+          gr.addColorStop(0, "rgba(" + rgb + ",1)");
+          if (core) gr.addColorStop(core, "rgba(" + rgb + ",1)");
+          else gr.addColorStop(0.45, "rgba(" + rgb + ",.35)");
+          gr.addColorStop(1, "rgba(" + rgb + ",0)");
+          g.fillStyle = gr;
+          g.fillRect(0, 0, size, size);
+          return (SPR[k] = c);
+        };
+        const blob = (c, s, x, y, r) =>
+          c.drawImage(s, x - r, y - r, r * 2, r * 2);
+        const fogPuffs = (c, w, h, t, n, alpha, rgb, ph) => {
+          const s = spr(rgb || "190,208,205", 128);
+          c.globalAlpha = alpha;
+          for (let i = 0; i < n; i++) {
+            const j = i + (ph || 0);
+            blob(
+              c,
+              s,
+              w * (0.5 + 0.6 * Math.sin(t * 0.07 * ((j % 5) + 1) + j * 1.7)),
+              h * (0.5 + 0.55 * Math.cos(t * 0.05 * ((j % 4) + 1) + j * 2.3)),
+              Math.max(w, h) * (0.2 + 0.08 * Math.sin(j + t * 0.2)),
+            );
+          }
+          c.globalAlpha = 1;
+        };
+
+        function shell(host, count, pick) {
+          host.classList.add("task");
+          host.innerHTML =
+            '<div class="tabs"></div><div class="row"><span></span><span></span></div><div class="stage"></div><div class="acts"></div><div class="status"></div>';
+          const row = $(".row", host),
+            st = $(".status", host),
+            tabs = [];
+          for (let i = 0; i < count; i++) {
+            const e = document.createElement("button");
+            e.className = "tab";
+            e.onclick = () => pick(i);
+            $(".tabs", host).append(e);
+            tabs.push(e);
+          }
+          return {
+            row,
+            stage: $(".stage", host),
+            acts: $(".acts", host),
+            left: (h) => { row.children[0].innerHTML = h; },
+            right: (h) => { row.children[1].innerHTML = h; },
+            say: (c, m, s) => {
+              st.className = "status " + (c || "");
+              st.innerHTML = m + (s ? '<span class="sub">' + s + "</span>" : "");
+            },
+            tabs: (d, a, l) =>
+              tabs.forEach((e, i) => {
+                e.className =
+                  "tab" + (d(i) ? " done" : "") + (i === a ? " active" : "");
+                e.textContent = ROM[i] + (d(i) ? " ✓" : "");
+                e.disabled = !!(l && l(i));
+              }),
+          };
+        }
+        function finale(host, text, cb) {
+          host.innerHTML =
+            '<div class="final"><div class="big">Все уровни пройдены</div><div class="small">' +
+            text +
+            "</div></div>";
+          host.firstChild.append(btn("Хорошо", "primary", cb));
+        }
+
+        const Sea = (host, done) => {
+          const key = "sea_done::" + SEED,
+            fin = new Set(load(key, []));
+          const LV = [
+            [12, 3, 36],
+            [14, 4, 48],
+            [16, 5, 60],
+            [18, 6, 74],
+            [20, 7, 90],
+          ];
+          const BAND = [
+            [3, "Очень горячо", "132,60,48", 0.55],
+            [6, "Горячо", "120,88,52", 0.46],
+            [10, "Тепло", "98,104,60", 0.38],
+            [16, "Прохладно", "50,84,114", 0.36],
+            [99, "Холодно", "36,58,86", 0.32],
+          ];
+          const FK = 0.5;
+          let cur = 0, N, max, tg, mark, shots, found, over, C, P, S, cx,
+            bc, bg, mc, mg, fc, fg, vc,
+            dirty = true, raf = 0, last = 0, hover = null;
+
+          const first = () => {
+            let i = 0;
+            while (i < 5 && fin.has(i)) i++;
+            return i;
+          };
+          const bNext = btn("Дальше", "", next);
+          const ui = shell(host, 5, (i) => {
+              if (i <= first()) setup(i);
+            }),
+            cv = document.createElement("canvas"),
+            lg = document.createElement("div");
+          lg.className = "legend";
+          lg.innerHTML =
+            BAND.map(
+              (b) =>
+                '<span><i style="background:rgba(' + b[2] + "," + b[3] + ')"></i>' +
+                b[1].toLowerCase() + "</span>",
+            ).join("") +
+            '<span><i style="background:var(--gold);border-radius:50%"></i>след</span>';
+          ui.row.before(lg);
+          ui.stage.append(cv);
+          ui.stage.classList.add("bare");
+          ui.acts.append(btn("Сбросить", "", () => setup(cur)), bNext);
+
+          function sync() {
+            ui.tabs((j) => fin.has(j), cur, (j) => j > first());
+            bNext.disabled = !fin.has(cur);
+            bNext.className = "btn" + (fin.has(cur) ? " primary" : "");
+          }
+          function next() {
+            if (!fin.has(cur)) return;
+            if (cur + 1 < LV.length) return setup(cur + 1);
+            finale(host, "Задание выполнено.", done);
+          }
+          function place(n, c, r) {
+            const m = Math.floor(n * 0.1),
+              d = Math.max(3, Math.floor(n / 3)),
+              a = [];
+            let k = 0;
+            while (a.length < c && k++ < c * 200) {
+              const x = m + Math.floor(r() * (n - 2 * m)),
+                y = m + Math.floor(r() * (n - 2 * m));
+              if (a.every((p) => Math.abs(p.x - x) + Math.abs(p.y - y) >= d))
+                a.push({ x, y });
+            }
+            while (a.length < c) {
+              const x = Math.floor(r() * n),
+                y = Math.floor(r() * n);
+              if (!a.some((p) => p.x === x && p.y === y)) a.push({ x, y });
+            }
+            return a;
+          }
+          function setup(i) {
+            cur = i;
+            [N, , max] = LV[i];
+            tg = place(N, LV[i][1], rng(SEED ^ ((i + 1) * 0x9e3779b1)));
+            const pr = rng(SEED ^ ((i + 7) * 0x85ebca6b));
+            tg.forEach((p) => {
+              p.rot = (pr() - 0.5) * 2.2;
+              p.ox = (pr() - 0.5) * 0.14;
+              p.oy = (pr() - 0.5) * 0.14;
+            });
+            mark = {};
+            shots = 0;
+            found = 0;
+            over = false;
+            hover = null;
+            sync();
+            info();
+            size();
+            kick();
+            ui.say("", "Нужно нажать на клетку — туман подскажет.", "Необходимо найти все следы");
+          }
+          function info() {
+            ui.left("Найдено <b>" + found + " / " + tg.length + "</b>");
+            ui.right(
+              'Попытки <b class="' + (max - shots <= 5 ? "warn" : "") + '">' +
+                shots + " / " + max + "</b>",
+            );
+          }
+          const reveal = (x, y) =>
+            blob(mg, spr("0,0,0", 128, 0.45), P + x * C + C / 2, P + y * C + C / 2, C * 1.5);
+          const fogOff = () => {};
+
+          function size() {
+            C = Math.max(12, Math.floor((ui.stage.clientWidth - 6) / N));
+            P = 2;
+            S = P + C * N + 4;
+            cx = fit(cv, S, S);
+            [bc, bg] = mk(S, S, DPR());
+            [mc, mg] = mk(S, S, FK);
+            [fc, fg] = mk(S, S, FK);
+            mg.globalCompositeOperation = "source-over";
+            mg.fillStyle = "#fff";
+            mg.fillRect(0, 0, S, S);
+            mg.globalCompositeOperation = "destination-out";
+            for (const k in mark) {
+              const [x, y] = k.split(",").map(Number);
+              reveal(x, y);
+            }
+            if (over && found === tg.length) fogOff();
+            let g;
+            [vc, g] = mk(S, S, 1);
+            const gr = g.createRadialGradient(S / 2, S / 2, S * 0.3, S / 2, S / 2, S * 0.75);
+            gr.addColorStop(0, "rgba(0,0,0,0)");
+            gr.addColorStop(1, "rgba(0,0,0,.65)");
+            g.fillStyle = gr;
+            g.fillRect(0, 0, S, S);
+            dirty = true;
+          }
+          function drawBase() {
+            bg.fillStyle = "#050809";
+            bg.fillRect(0, 0, S, S);
+            for (let y = 0; y < N; y++)
+              for (let x = 0; x < N; x++) {
+                bg.fillStyle = (x + y) & 1 ? "#0a1114" : "#0d1418";
+                bg.fillRect(P + x * C, P + y * C, C, C);
+                const m = mark[x + "," + y];
+                if (m != null && m >= 0) {
+                  const B = BAND[m];
+                  bg.fillStyle = "rgba(" + B[2] + "," + B[3] + ")";
+                  bg.fillRect(P + x * C + 1, P + y * C + 1, C - 2, C - 2);
+                }
+              }
+            bg.strokeStyle = "rgba(60,80,84,.14)";
+            bg.lineWidth = 1;
+            bg.beginPath();
+            for (let i = 0; i <= N; i++) {
+              bg.moveTo(P, P + i * C + 0.5);
+              bg.lineTo(P + N * C, P + i * C + 0.5);
+              bg.moveTo(P + i * C + 0.5, P);
+              bg.lineTo(P + i * C + 0.5, P + N * C);
+            }
+            bg.stroke();
+            dirty = false;
+          }
+          function paint() {
+            if (!cx || !bc) return;
+            if (dirty) drawBase();
+            cx.drawImage(bc, 0, 0, S, S);
+
+            fg.globalCompositeOperation = "source-over";
+            fg.clearRect(0, 0, S, S);
+            fg.fillStyle = "rgba(4,7,9,.96)";
+            fg.fillRect(0, 0, S, S);
+            fogPuffs(fg, S, S, 0, 7, 0.14);
+            fogPuffs(fg, S, S, 9, 5, 0.09, "107,147,131", 3);
+            fg.globalCompositeOperation = "destination-in";
+            fg.drawImage(mc, 0, 0, S, S);
+            cx.drawImage(fc, 0, 0, S, S);
+
+            if (hover && !over && hover.x >= 0 && hover.y >= 0 && hover.x < N && hover.y < N) {
+              const px = P + hover.x * C, py = P + hover.y * C;
+              cx.strokeStyle = "rgba(194,168,120,.9)";
+              cx.lineWidth = 2;
+              cx.strokeRect(px, py, C, C);
+            }
+            cx.drawImage(vc, 0, 0, S, S);
+            const pt = pawTint("#8f7d58");
+            tg.forEach((p) => {
+              if (!p.f || !pt) return;
+              const x = P + (p.x + 0.5 + p.ox) * C,
+                y = P + (p.y + 0.5 + p.oy) * C,
+                k = Math.min((C * 0.72) / pt.width, (C * 0.72) / pt.height),
+                w = pt.width * k,
+                h = pt.height * k;
+              cx.save();
+              cx.translate(x, y);
+              cx.rotate(p.rot);
+              cx.drawImage(pt, -w / 2, -h / 2, w, h);
+              cx.restore();
+            });
+            cx.globalAlpha = 1;
+          }
+          function frame(ts) {
+            raf = 0;
+            if (!host.isConnected) return;
+            raf = requestAnimationFrame(frame);
+            if (ts - last < 33) return;
+            last = ts;
+            paint();
+          }
+          const kick = () => {
+            if (!raf) raf = requestAnimationFrame(frame);
+          };
+          function shot(x, y) {
+            if (over || x < 0 || y < 0 || x >= N || y >= N) return;
+            const k = x + "," + y;
+            if (k in mark)
+              return ui.say("bad", "Эта клетка уже проверена.", "Нужно выбрать другую клетку.");
+            shots++;
+            reveal(x, y);
+            const t = tg.find((p) => !p.f && p.x === x && p.y === y);
+            if (t) {
+              t.f = 1;
+              found++;
+              mark[k] = -1;
+            } else {
+              const d = Math.min(
+                  ...tg.filter((p) => !p.f).map((p) => Math.abs(p.x - x) + Math.abs(p.y - y)),
+                ),
+                bi = BAND.findIndex((b) => d <= b[0]);
+              mark[k] = bi;
+              ui.say(d <= 6 ? "good" : "", BAND[bi][1] + ".", "До ближайшего следа: " + d + " кл.");
+            }
+            dirty = true;
+            if (found === tg.length) {
+              over = true;
+              fogOff();
+              fin.add(cur);
+              save(key, [...fin]);
+              sync();
+              ui.say("good", "Все следы найдены за " + shots + " попыток.", "Можно перейти дальше.");
+            } else if (shots >= max) {
+              over = true;
+              ui.say(
+                "bad",
+                "Лимит попыток исчерпан. Найдено: " + found + " / " + tg.length + ".",
+                "Нужно нажать «Сбросить».",
+              );
+            } else if (t) ui.say("good", "Нашли след.", "Осталось найти: " + (tg.length - found));
+            info();
+            kick();
+          }
+          const cellAt = (e) => {
+            const r = cv.getBoundingClientRect(), k = S / r.width;
+            return {
+              x: Math.floor(((e.clientX - r.left) * k - P) / C),
+              y: Math.floor(((e.clientY - r.top) * k - P) / C),
+            };
+          };
+          cv.onclick = (e) => {
+            const c = cellAt(e);
+            shot(c.x, c.y);
+          };
+          cv.onpointermove = (e) => {
+            if (e.pointerType === "mouse") hover = cellAt(e);
+          };
+          cv.onpointerleave = () => (hover = null);
+          watch(ui.stage, () => {
+            if (N) size();
+          });
+          pawImg.addEventListener("load", () => {
+            if (!over) kick();
+          });
+          setup(0);
+        };
+
+        const Odd = (host, done) => {
+          const P = "https://wsrv.nl/?url=catwar.su/cw3/things/",
+            it = (id, l) => ({ img: P + id + ".png", l });
+          const FB = {
+            img: "https://static.wikia.nocookie.net/catwar/images/5/56/987.png/revision/latest?cb=20180731173858&path-prefix=ru",
+            l: "Рыбьи косточки",
+          };
+          const T = [
+            {
+              theme: "Готовые крафты",
+              wrong: [1, 5],
+              items: [
+                it(439, "Паучок на палочке"),
+                it(985, "Кости"),
+                it(342, "Спокойная бабочка"),
+                it(590, "Домик светлячка"),
+                it(433, "Привет из прошлого"),
+                it(20, "Паутина"),
+              ],
+            },
+            {
+              theme: "Смесь: Паучок на палочке",
+              wrong: [2, 3, 4, 5],
+              items: [
+                it(1035, "Ветка"),
+                it(20, "Паутина"),
+                it(985, "Кости"),
+                it(86, "Светлячки"),
+                FB,
+                it(1034, "Крошечный камень"),
+              ],
+            },
+            {
+              theme: "Смесь: Домик светлячка",
+              wrong: [2, 3, 4, 5],
+              items: [
+                FB,
+                it(86, "Светлячки"),
+                it(985, "Кости"),
+                it(20, "Паутина"),
+                it(1035, "Ветка"),
+                it(1034, "Крошечный камень"),
+              ],
+            },
+            {
+              theme: "Смесь: Привет из прошлого",
+              wrong: [2, 3, 4, 5],
+              items: [
+                it(985, "Кости"),
+                it(986, "Косточки"),
+                it(20, "Паутина"),
+                it(1035, "Ветка"),
+                it(86, "Светлячки"),
+                FB,
+              ],
+            },
+            {
+              theme: "Смесь от кашля",
+              wrong: [4, 5],
+              hint: "Четыре карточки — ингредиенты для смеси от кашля. Две — посторонние травы.",
+              items: [
+                it(115, "Пижма"),
+                it(26, "Мать-и-мачеха"),
+                it(23, "Бурачник"),
+                it(13, "Кошачья мята"),
+                it(25, "Тысячелистник"),
+                it(119, "Шиповник"),
+              ],
+            },
+          ];
+
+          (() => {
+            let userSeed = load("odd_user_seed", 0);
+            if (!userSeed) {
+              userSeed = (Math.random() * 0xffffffff) >>> 0 || 1;
+              save("odd_user_seed", userSeed);
+            }
+            const sr = rng(userSeed);
+            T.forEach((t) => {
+              const idx = t.items.map((_, i) => i);
+              for (let i = idx.length - 1; i > 0; i--) {
+                const j = Math.floor(sr() * (i + 1));
+                [idx[i], idx[j]] = [idx[j], idx[i]];
+              }
+              t.items = idx.map((k) => t.items[k]);
+              t.wrong = t.wrong.map((w) => idx.indexOf(w)).sort((a, b) => a - b);
+            });
+            const order = shuf(T.map((_, i) => i), sr).map((i) => T[i]);
+            T.length = 0;
+            T.push(...order);
+          })();
+
+          const key = "odd_done::" + SEED,
+            MSG = "Нужно выбрать карточки, которые НЕ подходят по условию.";
+          const same = (a, b) =>
+            a.length === b.length && a.every((v) => b.includes(v));
+          let fin = load(key, {}),
+            tries = load(key + "::a", {}),
+            cur = 0,
+            sel = [];
+          Object.keys(fin).forEach((i) => {
+            if (!T[i] || !fin[i] || !same(fin[i].picked || [], T[i].wrong))
+              delete fin[i];
+          });
+          const first = () => {
+            let i = 0;
+            while (i < T.length && fin[i]) i++;
+            return i;
+          };
+          const ui = shell(host, T.length, (i) => {
+              if (i === first()) setup(i);
+            }),
+            grid = document.createElement("div");
+          grid.className = "grid";
+          ui.stage.append(grid);
+          ui.stage.classList.add("bare");
+          const bCheck = btn("Проверить", "primary", act);
+          ui.acts.append(bCheck);
+
+          function refresh() {
+            const n = Object.keys(fin).length;
+            ui.tabs((i) => fin[i], cur, (i) => i !== first());
+            ui.left("Пройдено <b>" + n + " / " + T.length + "</b>");
+            ui.right("Тема <b>" + T[cur].theme + "</b>");
+            bCheck.textContent = fin[cur] ? "Дальше" : "Проверить";
+            bCheck.disabled = !fin[cur] && !sel.length;
+          }
+          function setup(i) {
+            cur = i;
+            const t = T[i],
+              s = fin[i];
+            sel = s ? s.picked.slice() : [];
+            if (s) ui.say("good", "Уровень пройден.", "Попыток: " + s.attempts);
+            else ui.say("", MSG, t.hint);
+            grid.className = "grid";
+            grid.innerHTML = "";
+            t.items.forEach((o, j) => {
+              const c = document.createElement("div"),
+                im = new Image();
+              c.className =
+                "card" + (s ? " locked" + (sel.includes(j) ? " right" : "") : "");
+              im.src = o.img;
+              im.alt = o.l;
+              im.referrerPolicy = "no-referrer";
+              im.onerror = () => {
+                const f = document.createElement("span");
+                f.textContent = o.l;
+                im.replaceWith(f);
+              };
+              c.append(im);
+              c.onclick = () => toggle(j, c);
+              grid.append(c);
+            });
+            refresh();
+          }
+          function toggle(i, c) {
+            if (fin[cur]) return;
+            const p = sel.indexOf(i);
+            if (p < 0) sel.push(i);
+            else sel.splice(p, 1);
+            c.classList.toggle("selected", p < 0);
+            ui.say(
+              "",
+              sel.length
+                ? "Выбрано карточек: " + sel.length + ". Можно нажать «Проверить»."
+                : MSG,
+            );
+            refresh();
+          }
+          function check() {
+            if (!sel.length || fin[cur]) return;
+            const t = T[cur];
+            tries[cur] = (tries[cur] || 0) + 1;
+            if (same(sel, t.wrong)) {
+              fin[cur] = {
+                picked: sel.slice(),
+                labels: sel.map((i) => t.items[i].l),
+                attempts: tries[cur],
+              };
+              grid.querySelectorAll(".card").forEach((c, i) => {
+                c.classList.remove("selected");
+                c.classList.add("locked");
+                c.classList.toggle("right", sel.includes(i));
+              });
+              ui.say("good", "Верно!", "Попыток на уровне: " + tries[cur]);
+            } else {
+              grid.classList.remove("shake");
+              void grid.offsetWidth;
+              grid.classList.add("shake");
+              ui.say(
+                "bad",
+                "Не совсем. Что-то из выбранного подходит, или не все лишние найдены.",
+                t.hint,
+              );
+            }
+            save(key, fin);
+            save(key + "::a", tries);
+            refresh();
+          }
+          function act() {
+            if (!fin[cur]) return check();
+            if (cur + 1 < T.length) return setup(cur + 1);
+            finale(host, "Задание выполнено.", done);
+          }
+          setup(Math.min(first(), T.length - 1));
+        };
+
+        const Pattern = (host, done) => {
+          const P = (x, y, tag) => ({ x, y, tag }),
+            rad = (d) => (d * Math.PI) / 180,
+            pol = (cx, cy, r, a) =>
+              P(cx + r * Math.cos(a), cy + r * Math.sin(a));
+          const loop = (a) => a.concat([a[0]]),
+            mir = (a) => a.map((p) => P(10 - p.x, p.y, p.tag)),
+            ek = (a, b) => (a < b ? a + "-" + b : b + "-" + a);
+          const ring = (n, r, o, cx, cy, tag) => {
+            const a = [];
+            for (let i = 0; i <= n; i++) {
+              const p = pol(cx, cy, r, rad(o) + (2 * Math.PI * (i % n)) / n);
+              p.tag = tag;
+              a.push(p);
+            }
+            return a;
+          };
+          const star = (cx, cy, n, R, r, o) => {
+            const a = [];
+            for (let i = 0; i <= 2 * n; i++) {
+              const k = i % (2 * n);
+              a.push(pol(cx, cy, k % 2 ? r : R, rad(o) + (k * Math.PI) / n));
+            }
+            return a;
+          };
+          const build = (name, paths, eye) => {
+            const nodes = [],
+              idx = {},
+              edges = new Set();
+            paths.forEach((pts) => {
+              const ids = pts.map((p) => {
+                const k = p.x.toFixed(2) + "," + p.y.toFixed(2);
+                if (!(k in idx)) {
+                  idx[k] = nodes.length;
+                  nodes.push(p);
+                }
+                return idx[k];
+              });
+              for (let i = 1; i < ids.length; i++)
+                if (ids[i - 1] !== ids[i]) edges.add(ek(ids[i - 1], ids[i]));
+            });
+            return { name, nodes, edges, eye };
+          };
+          const moon = () => {
+            const c1 = P(4.9, 5.5),
+              r1 = 4.4,
+              c2 = P(6.7, 5.5),
+              r2 = 3.6,
+              d = 1.8,
+              a = (r1 * r1 - r2 * r2 + d * d) / (2 * d),
+              h = Math.sqrt(r1 * r1 - a * a);
+            const to = Math.atan2(h, a),
+              ti = Math.atan2(h, c1.x + a - c2.x),
+              no = Math.round((r1 * (2 * Math.PI - 2 * to)) / 1.5),
+              ni = Math.round((r2 * (2 * Math.PI - 2 * ti)) / 1.5),
+              pts = [];
+            for (let i = 0; i <= no; i++)
+              pts.push(
+                pol(c1.x, c1.y, r1, to + ((2 * Math.PI - 2 * to) * i) / no),
+              );
+            for (let i = 2; i <= ni - 2; i++)
+              pts.push(
+                pol(
+                  c2.x,
+                  c2.y,
+                  r2,
+                  2 * Math.PI - ti - ((2 * Math.PI - 2 * ti) * i) / ni,
+                ),
+              );
+            pts.push(pts[0]);
+            return [pts, star(8.6, 5.5, 4, 1.4, 0.75, -90)];
+          };
+          const cat = () => {
+            const eyeL = loop([P(3.2, 4.3), P(4, 5), P(3.2, 5.7), P(2.4, 5)]);
+            return [
+              loop([
+                P(1.6, 1.2),
+                P(3.6, 2.8),
+                P(6.4, 2.8),
+                P(8.4, 1.2),
+                P(9, 4.4),
+                P(9, 7),
+                P(7.6, 9.2),
+                P(5, 10),
+                P(2.4, 9.2),
+                P(1, 7),
+                P(1, 4.4),
+              ]),
+              eyeL,
+              mir(eyeL),
+              loop([P(4.3, 6.2), P(5.7, 6.2), P(5, 7.1)]),
+              [P(3.9, 8), P(5, 7.1), P(6.1, 8)],
+            ];
+          };
+          const spider = () => {
+            const abd = ring(8, 1.7, -90, 5, 7),
+              tho = ring(6, 1, 0, 5, 3.5),
+              paths = [abd, tho];
+            [
+              [tho[5], P(7.2, 1.2), P(9, 2.2)],
+              [tho[0], P(8, 2.9), P(9.4, 4.4)],
+              [abd[1], P(8.3, 5.4), P(9.5, 6.6)],
+              [abd[2], P(8.4, 8), P(8.9, 9.9)],
+            ].forEach((l) => paths.push(l, mir(l)));
+            return paths;
+          };
+          const bat = () => {
+            const R = [
+                P(5, 2.8),
+                P(5.7, 1.2),
+                P(6.3, 2.9),
+                P(9.6, 2),
+                P(8.5, 4.2),
+                P(8.9, 5.7),
+                P(7.8, 6),
+                P(7.2, 7),
+                P(6, 5.8),
+                P(5.6, 7.6),
+                P(5, 8.6),
+              ],
+              W = P(6.4, 4.2);
+            const paths = [
+              loop(R.concat(mir(R.slice(1, -1)).reverse())),
+              [R[2], W],
+              [W, R[3]],
+              [W, R[5]],
+              [W, R[7]],
+            ];
+            return paths.concat(paths.slice(1).map(mir));
+          };
+          const eye = () => {
+            const lid = (x) => 3.6 * (1 - ((x - 5) / 4.3) ** 2),
+              xs = [0.7, 1.8, 3, 4, 5, 6, 7, 8.2, 9.3],
+              pp = (x, y) => P(x, y, "pupil");
+            const up = xs.map((x) => P(x, 5.5 - lid(x))),
+              low = xs
+                .slice(1, -1)
+                .reverse()
+                .map((x) => P(x, 5.5 + lid(x)));
+            return [
+              loop(up.concat(low)),
+              ring(10, 2.5, -90, 5, 5.5, "iris"),
+              loop([pp(5, 4), pp(5.55, 5.5), pp(5, 7), pp(4.45, 5.5)]),
+            ];
+          };
+          const LV = [
+            build("Звёздочка", [star(5, 5.7, 5, 4.8, 2, -90)]),
+            build("Свеча", [
+              loop([
+                P(5, 0.9),
+                P(6, 2.4),
+                P(5.9, 3.6),
+                P(5, 4.2),
+                P(4.1, 3.6),
+                P(4, 2.4),
+              ]),
+              [P(5, 4.2), P(5, 5.8)],
+              loop([
+                P(3.4, 5.8),
+                P(5, 5.8),
+                P(6.6, 5.8),
+                P(6.6, 9.6),
+                P(3.4, 9.6),
+              ]),
+            ]),
+            build("Луна", moon()),
+            build(
+              "Лапка",
+              [
+                loop([
+                  P(5, 6),
+                  P(6.5, 6.6),
+                  P(7.3, 8.1),
+                  P(6.5, 9.6),
+                  P(5, 9),
+                  P(3.5, 9.6),
+                  P(2.7, 8.1),
+                  P(3.5, 6.6),
+                ]),
+              ].concat(
+                [
+                  [1.6, 5.3],
+                  [3.6, 2.7],
+                  [6.4, 2.7],
+                  [8.4, 5.3],
+                ].map(([x, y]) =>
+                  loop([
+                    P(x, y - 1.1),
+                    P(x + 0.8, y),
+                    P(x, y + 1.1),
+                    P(x - 0.8, y),
+                  ]),
+                ),
+              ),
+            ),
+            build("Котик", cat()),
+            build("Паук", spider()),
+            build("Летучая мышь", bat()),
+            build("Глаз", eye(), true),
+          ];
+          const GZ = [
+            [0, 0],
+            [1, 0],
+            [1.18, -0.8],
+            [2.6, -0.8],
+            [2.75, 0.8],
+            [4.1, 0.8],
+            [4.3, 0],
+            [4.8, 0],
+            [6.7, 0.45],
+            [6.85, 0],
+            [7.2, 0],
+          ];
+          const glance = (t) => {
+            const u = t % 7.2;
+            for (let i = 1; i < GZ.length; i++)
+              if (u <= GZ[i][0]) {
+                const [[t0, x0], [t1, x1]] = [GZ[i - 1], GZ[i]],
+                  k = (u - t0) / (t1 - t0);
+                return x0 + (x1 - x0) * k * k * (3 - 2 * k);
+              }
+            return 0;
+          };
+
+          const key = "pattern_done::v6::" + SEED,
+            PAD = 20;
+          let fin = load(key, {}),
+            cur = 0,
+            lv = LV[0],
+            C,
+            W,
+            H,
+            cx,
+            drawn,
+            dset,
+            from = -1,
+            fx = 0,
+            fy = 0,
+            eyeS = 1,
+            pup = 1,
+            look = 0,
+            gaze = 0,
+            gazeT = -1e9,
+            raf = 0,
+            dead = false;
+          const ui = shell(host, LV.length, (i) => {
+              if (i === first()) setup(i);
+            }),
+            cv = document.createElement("canvas");
+          host.classList.add("drag");
+          ui.stage.append(cv);
+          ui.stage.classList.add("bare");
+          const bReset = btn("Сбросить", "", reset),
+            bNext = btn("Дальше", "", next);
+          ui.acts.append(bReset, bNext);
+
+          const anim = () => !!lv.eye && !!fin[cur];
+          const X = (p) =>
+            PAD +
+            (anim()
+              ? (p.tag === "pupil" ? 5 + (p.x - 5) * pup : p.x) +
+                (p.tag ? look : 0)
+              : p.x) *
+              C;
+          const Y = (p) => PAD + (anim() ? 5.5 + (p.y - 5.5) * eyeS : p.y) * C;
+          const first = () => {
+            let i = 0;
+            while (i < LV.length && fin[i]) i++;
+            return i;
+          };
+
+          function refresh() {
+            const f = first();
+            ui.tabs(
+              (i) => fin[i],
+              cur,
+              (i) => i !== f,
+            );
+            ui.left(
+              "Уровни <b>" +
+                Object.values(fin).filter(Boolean).length +
+                " / " +
+                LV.length +
+                "</b>",
+            );
+            ui.right("Узор <b>" + lv.name + "</b>");
+            bNext.disabled = !fin[cur];
+            bNext.className = "btn" + (fin[cur] ? " primary" : "");
+          }
+          function setup(i) {
+            cur = i;
+            lv = LV[i];
+            from = -1;
+            drawn = [];
+            dset = new Set();
+            eyeS = pup = 1;
+            look = 0;
+            if (fin[i]) {
+              lv.edges.forEach((k) => {
+                drawn.push(k);
+                dset.add(k);
+              });
+              ui.say("good", "Готово.");
+            } else
+              ui.say(
+                "",
+                "Точки нужно соединить.",
+                "Начинать можно с любой точки.",
+              );
+            size();
+            paint();
+            refresh();
+            kick();
+          }
+          function size() {
+            const avail = Math.max(
+              260,
+              Math.min(ui.stage.clientWidth, 560),
+            );
+            C = Math.max(22, Math.floor((avail - PAD * 2) / 10));
+            W = C * 10 + PAD * 2;
+            H = C * 11 + PAD * 2 + 10;
+            cx = fit(cv, W, H);
+          }
+          function paint() {
+            const ok = false,
+              red = anim(),
+              w = Math.max(1.6, C * 0.07);
+            cx.fillStyle = "#0a1012";
+            cx.fillRect(0, 0, W, H);
+            cx.strokeStyle = "rgba(60,80,84,.09)";
+            cx.lineWidth = 1;
+            cx.beginPath();
+            for (let i = 0; i <= 11; i++) {
+              if (i <= 10) {
+                cx.moveTo(PAD + i * C + 0.5, PAD);
+                cx.lineTo(PAD + i * C + 0.5, PAD + 11 * C);
+              }
+              cx.moveTo(PAD, PAD + i * C + 0.5);
+              cx.lineTo(PAD + 10 * C, PAD + i * C + 0.5);
+            }
+            cx.stroke();
+            if (red) {
+              const R = C * 2.6,
+                h = cx.createRadialGradient(0, 0, 0, 0, 0, R);
+              h.addColorStop(0, "rgba(150,20,20,.6)");
+              h.addColorStop(0.65, "rgba(110,20,25,.28)");
+              h.addColorStop(1, "rgba(0,0,0,0)");
+              cx.save();
+              cx.translate(PAD + (5 + look) * C, PAD + 5.5 * C);
+              cx.scale(1, Math.max(eyeS, 0.02));
+              cx.fillStyle = h;
+              cx.beginPath();
+              cx.arc(0, 0, R, 0, 7);
+              cx.fill();
+              cx.restore();
+            }
+            const col = red
+              ? ["rgba(200,50,40,.2)", "#d9705f", "#ffe3dc"]
+              : ok
+                ? ["rgba(138,196,122,.12)", "#cfe0a8", "#fbfff0"]
+                : ["rgba(194,168,120,.12)", "#e0cc9c", "#fff6df"];
+            cx.lineCap = cx.lineJoin = "round";
+            [
+              [w * (red ? 3 : 2.4), col[0]],
+              [w, col[1]],
+              [w * 0.3, col[2]],
+            ].forEach(([lw, c]) => {
+              cx.strokeStyle = c;
+              cx.lineWidth = lw;
+              cx.beginPath();
+              drawn.forEach((k) => {
+                const [a, b] = k.split("-").map(Number);
+                cx.moveTo(X(lv.nodes[a]), Y(lv.nodes[a]));
+                cx.lineTo(X(lv.nodes[b]), Y(lv.nodes[b]));
+              });
+              if (from >= 0) {
+                cx.moveTo(X(lv.nodes[from]), Y(lv.nodes[from]));
+                cx.lineTo(fx, fy);
+              }
+              cx.stroke();
+            });
+            const used = new Set(
+              drawn.flatMap((k) => k.split("-").map(Number)),
+            );
+            lv.nodes.forEach((p, i) => {
+              const x = X(p),
+                y = Y(p),
+                u = used.has(i);
+              let r = C * (u ? 0.26 : 0.22),
+                gl = u
+                  ? red
+                    ? "rgba(210,70,60,.6)"
+                    : ok
+                      ? "rgba(138,196,122,.55)"
+                      : "rgba(240,217,168,.6)"
+                  : "rgba(194,168,120,.5)",
+                co = u
+                  ? red
+                    ? "#ffd9d2"
+                    : ok
+                      ? "#d7e8cf"
+                      : "#f6e8c4"
+                  : "#f0d9a8";
+              if (i === from) {
+                gl = "rgba(240,217,168,.9)";
+                co = "#fff";
+                r = C * 0.34;
+              }
+              const h = cx.createRadialGradient(x, y, 0, x, y, r);
+              h.addColorStop(0, gl);
+              h.addColorStop(1, "rgba(0,0,0,0)");
+              cx.fillStyle = h;
+              cx.beginPath();
+              cx.arc(x, y, r, 0, 7);
+              cx.fill();
+              cx.fillStyle = co;
+              cx.beginPath();
+              cx.arc(x, y, C * 0.055, 0, 7);
+              cx.fill();
+            });
+            const vg = cx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.75);
+            vg.addColorStop(0, "rgba(0,0,0,0)");
+            vg.addColorStop(1, "rgba(0,0,0,0.55)");
+            cx.fillStyle = vg;
+            cx.fillRect(0, 0, W, H);
+            cx.strokeStyle = "rgba(60,80,84,.5)";
+            cx.strokeRect(1.5, 1.5, W - 3, H - 3);
+          }
+          function tick(ts) {
+            raf = 0;
+            if (dead || !host.isConnected) return;
+            if (!anim()) {
+              eyeS = pup = 1;
+              look = 0;
+              paint();
+              return;
+            }
+            const t = ts / 1000,
+              u = t % 4.2,
+              recent = ts - gazeT < 2500;
+            eyeS = 1;
+            [
+              [0, 0.26],
+              [0.42, 0.68],
+            ].forEach(([a, b]) => {
+              if (u >= a && u < b)
+                eyeS = 1 - 0.93 * Math.sin((Math.PI * (u - a)) / (b - a));
+            });
+            pup = 0.6 + 0.4 * (0.5 + 0.5 * Math.sin(t * 2.2));
+            look +=
+              ((recent ? gaze : glance(t) + 0.025 * Math.sin(t * 37)) - look) *
+              (recent ? 0.2 : 1);
+            paint();
+            raf = requestAnimationFrame(tick);
+          }
+          function kick() {
+            if (!raf && !dead && anim()) raf = requestAnimationFrame(tick);
+          }
+
+          const at = (e) => {
+            const r = cv.getBoundingClientRect();
+            return [
+              ((e.clientX - r.left) * W) / r.width,
+              ((e.clientY - r.top) * H) / r.height,
+            ];
+          };
+          function near(x, y) {
+            let b = -1,
+              d = C * 0.42;
+            lv.nodes.forEach((p, i) => {
+              const k = Math.hypot(x - X(p), y - Y(p));
+              if (k < d) {
+                d = k;
+                b = i;
+              }
+            });
+            return b;
+          }
+          function link(a, b) {
+            const k = ek(a, b);
+            if (dset.has(k)) return;
+            drawn.push(k);
+            dset.add(k);
+            if (
+              dset.size === lv.edges.size &&
+              [...lv.edges].every((e) => dset.has(e))
+            ) {
+              fin[cur] = true;
+              save(key, fin);
+              from = -1;
+              ui.say(
+                "good",
+                lv.eye
+                  ? "Глаз открылся... и смотрит прямо на... тебя?"
+                  : "Готово!",
+                "Можно перейти дальше.",
+              );
+              kick();
+            }
+          }
+          cv.onpointerdown = (e) => {
+            if (fin[cur]) return;
+            e.preventDefault();
+            const [x, y] = at(e),
+              n = near(x, y);
+            if (n < 0) return;
+            cv.setPointerCapture(e.pointerId);
+            from = n;
+            fx = x;
+            fy = y;
+            ui.say("", "Линия тянется к другим точкам...");
+            paint();
+          };
+          cv.onpointermove = (e) => {
+            if (anim()) {
+              gaze = Math.max(
+                -0.8,
+                Math.min(0.8, ((at(e)[0] - (PAD + 5 * C)) / C) * 0.3),
+              );
+              gazeT = performance.now();
+            }
+            if (from < 0 || fin[cur]) return;
+            e.preventDefault();
+            const [x, y] = at(e),
+              dx = x - fx,
+              dy = y - fy,
+              n = Math.max(1, Math.ceil(Math.hypot(dx, dy) / (C * 0.12)));
+            for (let s = 1; s <= n && from >= 0; s++) {
+              const h = near(fx + (dx * s) / n, fy + (dy * s) / n);
+              if (h >= 0 && h !== from) {
+                link(from, h);
+                if (fin[cur]) break;
+                from = h;
+              }
+            }
+            fx = x;
+            fy = y;
+            paint();
+            refresh();
+          };
+          cv.onpointerup = cv.onpointercancel = () => {
+            if (from < 0) return;
+            from = -1;
+            if (!fin[cur]) {
+              if (drawn.length >= lv.edges.size)
+                ui.say(
+                  "bad",
+                  "Узор неверный.",
+                  "Нужно стереть всё и попробовать иначе.",
+                );
+              else ui.say("", "Линию можно продолжить — начинать можно с любой точки.");
+            }
+            paint();
+            refresh();
+          };
+          function reset() {
+            eyeS = pup = 1;
+            look = 0;
+            if (fin[cur]) {
+              fin[cur] = false;
+              save(key, fin);
+            }
+            from = -1;
+            drawn = [];
+            dset = new Set();
+            ui.say("", "Стёрто. Начинать можно с любой точки.");
+            paint();
+            refresh();
+          }
+          function next() {
+            if (!fin[cur]) return;
+            if (cur + 1 < LV.length) return setup(cur + 1);
+            dead = true;
+            cancelAnimationFrame(raf);
+            finale(host, "Все уровни пройдены.", done);
+          }
+          watch(ui.stage, () => {
+            if (!dead && lv) {
+              size();
+              paint();
+            }
+          });
+          setup(Math.min(first(), LV.length - 1));
+        };
+
+        const Maze = (host, done) => {
+          const touch = matchMedia("(pointer:coarse)").matches || innerWidth < 900,
+            n = touch ? 7 : 9,
+            GW = n * 2 + 1,
+            GH = GW,
+            E = GW - 2;
+          const POS = touch
+            ? {
+                tl: [2, 2, 3, 3],
+                tc: [6, 2, 3, 3],
+                tr: [10, 2, 3, 3],
+                ml: [2, 6, 3, 3],
+                cc: [6, 6, 3, 3],
+                mr: [10, 6, 3, 3],
+                bl: [2, 10, 3, 3],
+                bc: [6, 10, 3, 3],
+                br: [10, 10, 3, 3],
+              }
+            : {
+                tl: [2, 2, 4, 4],
+                tc: [7, 2, 5, 4],
+                tr: [13, 2, 4, 4],
+                ml: [2, 7, 4, 5],
+                cc: [7, 7, 5, 5],
+                mr: [13, 7, 4, 5],
+                bl: [2, 13, 4, 4],
+                bc: [7, 13, 5, 4],
+                br: [13, 13, 4, 4],
+              };
+          const Z = {
+            forest: ["rgba(58,110,48,0.3)", "#7ac454", "лес", 1, "лес"],
+            bridge: ["rgba(140,90,42,0.3)", "#d4924a", "мост", 1, "мост"],
+            cave: ["rgba(76,62,96,0.3)", "#9a7ac0", "пещеру", 1, "пещера"],
+            water: ["rgba(36,76,140,0.3)", "#5aa0e0", "воды", 0, "вода"],
+            swamp: ["rgba(112,112,42,0.3)", "#b8b850", "болота", 0, "болото"],
+            rocks: ["rgba(72,72,90,0.3)", "#8888a8", "скал", 0, "скалы"],
+            thorns: ["rgba(86,32,38,0.3)", "#e0454a", "шипов", 0, "шипы"],
+            lava: ["rgba(170,50,32,0.3)", "#e05a30", "лавы", 0, "лава"],
+          };
+          const TPL = [
+            [["forest", "bridge"], ["water", "thorns", "rocks"]],
+            [["cave", "bridge"], ["water", "swamp", "lava"]],
+            [["cave", "bridge"], ["water", "rocks", "thorns"]],
+            [["forest", "cave"], ["water", "swamp", "lava"]],
+            [["forest", "cave", "bridge"], ["water", "swamp", "thorns"]],
+          ];
+          const D4 = [
+              [0, -1],
+              [1, 0],
+              [0, 1],
+              [-1, 0],
+            ],
+            key = "maze_done::" + SEED,
+            fin = new Set(load(key, []));
+          const lcg = (s) => {
+            s = s >>> 0 || 1;
+            return () => {
+              s = (s * 1664525 + 1013904223) >>> 0;
+              return s / 4294967296;
+            };
+          };
+          const first = () => {
+            let i = 0;
+            while (i < 5 && fin.has(i)) i++;
+            return i;
+          };
+          const bNext = btn("Дальше", "", next);
+          let cur = 0,
+            grid,
+            V,
+            C,
+            cx,
+            sol,
+            trail,
+            seen,
+            got,
+            drag = false,
+            won = false,
+            dead = false,
+            last = null;
+          const ui = shell(host, 5, (i) => {
+              if (i <= first()) setup(i);
+            }),
+            cv = document.createElement("canvas"),
+            lg = document.createElement("div"),
+            chips = document.createElement("div");
+          lg.className = "legend";
+          chips.className = "chips";
+          ui.row.before(lg, chips);
+          host.classList.add("drag");
+          ui.stage.style.aspectRatio = "1 / 1";
+          ui.stage.style.alignItems = "center";
+          ui.stage.classList.add("bare");
+          ui.stage.append(cv);
+          ui.acts.append(btn("Сбросить", "", () => setup(cur)), bNext);
+          const k = (x, y) => x + "," + y;
+
+          function sync() {
+            ui.tabs((j) => fin.has(j), cur, (j) => j > first());
+            bNext.disabled = !fin.has(cur);
+            bNext.className = "btn" + (fin.has(cur) ? " primary" : "");
+          }
+          function next() {
+            if (!fin.has(cur)) return;
+            if (cur + 1 < 5) return setup(cur + 1);
+            finale(host, "Задание выполнено.", done);
+          }
+          function layout(vs, i) {
+            const r = lcg(vs * 2654435761 + i * 1009 + 13),
+              pos = shuf(Object.keys(POS), r),
+              good = shuf(TPL[i][0], r),
+              bad = shuf(TPL[i][1], r),
+              zones = [];
+            let p = 0;
+            good.concat(bad).forEach((type) => {
+              const [x, y, w, h] = POS[pos[p++]];
+              zones.push({ x, y, w, h, type });
+            });
+            return {
+              required: good,
+              zones,
+              conds: good
+                .map((t) => ({ t: Z[t][4] + " ✓", key: t }))
+                .concat(bad.map((t) => ({ t: Z[t][4] + " " }))),
+            };
+          }
+          function carve(seed) {
+            const r = lcg(seed * 7919 + 17),
+              dirs = D4.map((d) => d.slice());
+            grid = Array.from({ length: GH }, () => Array(GW).fill(1));
+            grid[1][1] = 0;
+            const st = [[0, 0]];
+            while (st.length) {
+              const [x, y] = st[st.length - 1];
+              for (let i = dirs.length - 1; i > 0; i--) {
+                const j = Math.floor(r() * (i + 1));
+                [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+              }
+              let moved = false;
+              for (const [dx, dy] of dirs) {
+                const nx = x + dx,
+                  ny = y + dy;
+                if (
+                  nx < 0 ||
+                  nx >= n ||
+                  ny < 0 ||
+                  ny >= n ||
+                  grid[2 * ny + 1][2 * nx + 1] === 0
+                )
+                  continue;
+                grid[2 * ny + 1][2 * nx + 1] = 0;
+                grid[2 * y + 1 + dy][2 * x + 1 + dx] = 0;
+                st.push([nx, ny]);
+                moved = true;
+                break;
+              }
+              if (!moved) st.pop();
+            }
+            for (let y = 0; y < n; y++)
+              for (let x = 0; x < n; x++) {
+                if (x + 1 < n && grid[2 * y + 1][2 * x + 2] === 1 && r() < 0.16)
+                  grid[2 * y + 1][2 * x + 2] = 0;
+                if (y + 1 < n && grid[2 * y + 2][2 * x + 1] === 1 && r() < 0.16)
+                  grid[2 * y + 2][2 * x + 1] = 0;
+              }
+          }
+          function solve() {
+            const prev = Array.from({ length: GH }, () => Array(GW).fill(null)),
+              q = [[1, 1]];
+            prev[1][1] = [1, 1];
+            for (let h = 0; h < q.length; h++) {
+              const [x, y] = q[h];
+              if (x === E && y === E) break;
+              for (const [dx, dy] of D4) {
+                const nx = x + dx,
+                  ny = y + dy;
+                if (grid[ny]?.[nx] !== 0 || prev[ny][nx]) continue;
+                prev[ny][nx] = [x, y];
+                q.push([nx, ny]);
+              }
+            }
+            const path = [];
+            let c = [E, E];
+            while (true) {
+              path.push(c);
+              const p = prev[c[1]][c[0]];
+              if (p[0] === c[0] && p[1] === c[1]) break;
+              c = p;
+            }
+            return path.reverse();
+          }
+          const zoneAt = (x, y) =>
+            V.zones.find((z) => x >= z.x && x < z.x + z.w && y >= z.y && y < z.y + z.h);
+          function solvable() {
+            for (const t of V.required) {
+              let ok = false;
+              V.zones.forEach((z) => {
+                if (z.type !== t) return;
+                for (let y = z.y; y < z.y + z.h; y++)
+                  for (let x = z.x; x < z.x + z.w; x++)
+                    if (grid[y]?.[x] === 0) ok = true;
+              });
+              if (!ok) return false;
+            }
+            const idx = {};
+            V.required.forEach((t, i) => (idx[t] = i));
+            const full = (1 << V.required.length) - 1,
+              vis = new Set(["1,1"]);
+            let steps = 0;
+            const go = (x, y, m) => {
+              if (++steps > 6000) return false;
+              if (x === E && y === E) return m === full;
+              for (const [dx, dy] of D4) {
+                const nx = x + dx,
+                  ny = y + dy,
+                  p = k(nx, ny);
+                if (grid[ny]?.[nx] !== 0 || vis.has(p)) continue;
+                const z = zoneAt(nx, ny),
+                  t = z && z.type;
+                if (t && !Z[t][3]) continue;
+                vis.add(p);
+                if (go(nx, ny, t in idx ? m | (1 << idx[t]) : m)) return true;
+                vis.delete(p);
+                if (steps > 6000) return false;
+              }
+              return false;
+            };
+            return go(1, 1, 0);
+          }
+          function dist(avoid) {
+            const idx = {};
+            V.required.forEach((t, i) => (idx[t] = i));
+            const full = (1 << V.required.length) - 1,
+              d = new Map([["1,1,0", 0]]),
+              q = [[1, 1, 0]];
+            for (let h = 0; h < q.length; h++) {
+              const [x, y, m] = q[h],
+                dd = d.get(x + "," + y + "," + m);
+              if (x === E && y === E && m === full) return dd;
+              for (const [dx, dy] of D4) {
+                const nx = x + dx,
+                  ny = y + dy;
+                if (grid[ny]?.[nx] !== 0) continue;
+                const z = zoneAt(nx, ny),
+                  t = z && z.type;
+                if (avoid && t && !Z[t][3]) continue;
+                const nm = t in idx ? m | (1 << idx[t]) : m,
+                  kk = nx + "," + ny + "," + nm;
+                if (!d.has(kk)) {
+                  d.set(kk, dd + 1);
+                  q.push([nx, ny, nm]);
+                }
+              }
+            }
+            return Infinity;
+          }
+          const blocked = () => {
+            const a = dist(true);
+            return isFinite(a) && a - dist(false) >= 5;
+          };
+
+          function setup(i) {
+            cur = i;
+            const vs = (SEED ^ (i * 0x9e3779b1)) >>> 0 || 1;
+            V = layout(vs, i);
+            let seed = vs + 1,
+              tries = 0,
+              found = false;
+            do {
+              carve(seed);
+              seed++;
+              tries++;
+              if (solvable() && blocked()) {
+                found = true;
+                break;
+              }
+            } while (tries < 800);
+            if (!found) {
+              seed = vs + 1;
+              tries = 0;
+              do {
+                carve(seed);
+                seed++;
+                tries++;
+              } while (!solvable() && tries < 400);
+            }
+            sol = solve();
+            trail = [[1, 1]];
+            seen = new Set(["1,1"]);
+            got = new Set();
+            drag = won = dead = false;
+            last = null;
+            lg.innerHTML = [...new Set(V.zones.map((z) => z.type))]
+              .map(
+                (t) =>
+                  '<span><i style="background:' +
+                  Z[t][0] +
+                  ";border-color:" +
+                  Z[t][1] +
+                  '"></i>' +
+                  Z[t][4] +
+                  "</span>",
+              )
+              .join("");
+            sync();
+            chipsRender();
+            size();
+            paint();
+            hud();
+            ui.say("", "Нужно нажать на золотую точку.");
+          }
+          function chipsRender() {
+            chips.innerHTML = V.conds
+              .map(
+                (c) =>
+                  '<span class="' +
+                  (c.key ? (got.has(c.key) ? "done" : "") : "no") +
+                  '">' +
+                  c.t +
+                  "</span>",
+              )
+              .join("");
+          }
+          function hud(pct) {
+            const [x, y] = trail[trail.length - 1];
+            let p = pct;
+            if (p == null) {
+              const i = sol.findIndex((s) => s[0] === x && s[1] === y);
+              p =
+                i >= 0
+                  ? Math.round((i / (sol.length - 1)) * 100)
+                  : Math.max(0, Math.round(((2 - x - y) / (2 - 2 * E)) * 100));
+            }
+            ui.left("Уровни <b>" + fin.size + " / 5</b>");
+            ui.right("Пройдено <b>" + Math.max(0, Math.min(100, p)) + "%</b>");
+          }
+          function size() {
+            const r = ui.stage.getBoundingClientRect();
+            C = Math.max(14, Math.floor(r.width / GW));
+            cx = fit(cv, C * GW, C * GW);
+          }
+          function glowDot(x, y, col, gl) {
+            const px = x * C + C / 2,
+              py = y * C + C / 2,
+              r = C * 0.55,
+              g = cx.createRadialGradient(px, py, 0, px, py, r * 2);
+            g.addColorStop(0, gl);
+            g.addColorStop(1, "rgba(0,0,0,0)");
+            cx.fillStyle = g;
+            cx.beginPath();
+            cx.arc(px, py, r * 2, 0, 7);
+            cx.fill();
+            cx.fillStyle = col;
+            cx.beginPath();
+            cx.arc(px, py, r * 0.55, 0, 7);
+            cx.fill();
+          }
+          function paint() {
+            const S = GW * C;
+            cx.clearRect(0, 0, S, S);
+            cx.fillStyle = "#0a1012";
+            cx.fillRect(0, 0, S, S);
+            for (let y = 0; y < GH; y++)
+              for (let x = 0; x < GW; x++) {
+                if (grid[y][x] !== 0) continue;
+                const px = x * C,
+                  py = y * C;
+                cx.fillStyle = (x + y) & 1 ? "#111b1e" : "#131e21";
+                cx.fillRect(px, py, C, C);
+              }
+            V.zones.forEach((z) => {
+              const [f, e] = Z[z.type],
+                ok = got.has(z.type);
+              cx.fillStyle = f;
+              for (let y = z.y; y < z.y + z.h; y++)
+                for (let x = z.x; x < z.x + z.w; x++)
+                  if (grid[y]?.[x] === 0) cx.fillRect(x * C, y * C, C, C);
+              cx.strokeStyle = e;
+              cx.lineWidth = ok ? 2 : 1.5;
+              cx.globalAlpha = ok ? 0.9 : 0.55;
+              cx.strokeRect(z.x * C + 1, z.y * C + 1, z.w * C - 2, z.h * C - 2);
+              cx.globalAlpha = 0.6;
+              cx.lineWidth = 1.5;
+              [
+                [z.x * C + 1, z.y * C + 1],
+                [(z.x + z.w) * C - 1, z.y * C + 1],
+                [z.x * C + 1, (z.y + z.h) * C - 1],
+                [(z.x + z.w) * C - 1, (z.y + z.h) * C - 1],
+              ].forEach(([mx, my]) => {
+                cx.beginPath();
+                cx.moveTo(mx, my);
+                cx.lineTo(mx + 5, my);
+                cx.moveTo(mx, my);
+                cx.lineTo(mx, my + 5);
+                cx.stroke();
+              });
+              cx.globalAlpha = 1;
+              if (ok) {
+                cx.fillStyle = e;
+                cx.font = "bold " + Math.max(12, Math.floor(C * 0.9)) + "px sans-serif";
+                cx.textAlign = "right";
+                cx.textBaseline = "top";
+                cx.fillText("✓", (z.x + z.w) * C - 6, z.y * C + 4);
+              }
+            });
+            for (let y = 0; y < GH; y++)
+              for (let x = 0; x < GW; x++) {
+                if (grid[y][x] !== 1) continue;
+                const px = x * C,
+                  py = y * C;
+                cx.fillStyle = "#080c0e";
+                cx.fillRect(px, py, C, C);
+                cx.strokeStyle = "rgba(60,80,84,0.26)";
+                cx.lineWidth = 1;
+                cx.strokeRect(px + 0.5, py + 0.5, C - 1, C - 1);
+              }
+            glowDot(1, 1, "#c2a878", "rgba(194,168,120,0.2)");
+            glowDot(E, E, "#6b9383", "rgba(107,147,131,0.2)");
+            if (trail.length > 1) {
+              const pts = trail.map(([x, y]) => [x * C + C / 2, y * C + C / 2]);
+              [
+                ["rgba(194,168,120,0.14)", Math.max(8, C * 0.85)],
+                ["#c2a878", Math.max(5, C * 0.55)],
+                ["#f0d9a8", Math.max(1, C * 0.14)],
+              ].forEach(([c, w]) => {
+                cx.strokeStyle = c;
+                cx.lineWidth = w;
+                cx.lineCap = cx.lineJoin = "round";
+                cx.beginPath();
+                pts.forEach(([x, y], i) => (i ? cx.lineTo(x, y) : cx.moveTo(x, y)));
+                cx.stroke();
+              });
+              const [hx, hy] = pts[pts.length - 1],
+                g = cx.createRadialGradient(hx, hy, 0, hx, hy, C * 0.55);
+              g.addColorStop(0, "rgba(240,217,168,0.45)");
+              g.addColorStop(1, "rgba(194,168,120,0)");
+              cx.fillStyle = g;
+              cx.beginPath();
+              cx.arc(hx, hy, C * 0.55, 0, 7);
+              cx.fill();
+            }
+            const vg = cx.createRadialGradient(S / 2, S / 2, S * 0.3, S / 2, S / 2, S * 0.75);
+            vg.addColorStop(0, "rgba(0,0,0,0)");
+            vg.addColorStop(1, "rgba(0,0,0,0.55)");
+            cx.fillStyle = vg;
+            cx.fillRect(0, 0, S, S);
+          }
+          function cell(e) {
+            const r = cv.getBoundingClientRect(),
+              fx = ((e.clientX - r.left) * ((C * GW) / r.width)) / C,
+              fy = ((e.clientY - r.top) * ((C * GW) / r.width)) / C;
+            let x = Math.floor(fx),
+              y = Math.floor(fy);
+            if (grid[y]?.[x] !== 0) {
+              let b = null,
+                bd = Infinity;
+              for (let j = Math.max(0, y - 1); j <= Math.min(GH - 1, y + 1); j++)
+                for (let i = Math.max(0, x - 1); i <= Math.min(GW - 1, x + 1); i++) {
+                  if (grid[j][i] !== 0) continue;
+                  const d = Math.hypot(i + 0.5 - fx, j + 0.5 - fy);
+                  if (d < bd) {
+                    bd = d;
+                    b = [i, j];
+                  }
+                }
+              if (b && bd < 1.5) {
+                x = b[0];
+                y = b[1];
+              }
+            }
+            return [x, y];
+          }
+          function recount() {
+            got = new Set();
+            V.zones.forEach((z) => {
+              if (
+                Z[z.type][3] &&
+                trail.some(
+                  ([x, y]) => x >= z.x && x < z.x + z.w && y >= z.y && y < z.y + z.h,
+                )
+              )
+                got.add(z.type);
+            });
+            chipsRender();
+          }
+          function fail(label) {
+            drag = false;
+            dead = true;
+            ui.say(
+              "bad",
+              label.charAt(0).toUpperCase() +
+                label.slice(1) +
+                " — сюда заходить нельзя. Нужно нажать «Сбросить».",
+            );
+            trail = [[1, 1]];
+            seen = new Set(["1,1"]);
+            got = new Set();
+            chipsRender();
+            paint();
+            hud();
+          }
+          function win() {
+            drag = false;
+            const miss = V.required.filter((t) => !got.has(t));
+            if (miss.length) {
+              dead = true;
+              ui.say(
+                "bad",
+                "Конец достигнут, но не через все нужные места: " +
+                  miss.map((t) => Z[t][2]).join(", ") +
+                  ".",
+              );
+              hud(100);
+              paint();
+              return;
+            }
+            won = true;
+            fin.add(cur);
+            save(key, [...fin]);
+            sync();
+            ui.say("good", "Уровень пройден.", "Можно перейти дальше.");
+            hud(100);
+            paint();
+          }
+          function extend(x, y) {
+            if (won || dead || grid[y]?.[x] !== 0) return;
+            const i = trail.findIndex((p) => p[0] === x && p[1] === y);
+            if (i >= 0 && i < trail.length - 1) {
+              trail = trail.slice(0, i + 1);
+              seen = new Set(trail.map((p) => k(p[0], p[1])));
+              recount();
+              paint();
+              hud();
+              return;
+            }
+            const l = trail[trail.length - 1];
+            if (
+              (l[0] === x && l[1] === y) ||
+              Math.abs(l[0] - x) + Math.abs(l[1] - y) !== 1 ||
+              seen.has(k(x, y))
+            )
+              return;
+            const z = zoneAt(x, y),
+              t = z && z.type;
+            if (t && !Z[t][3]) return fail(Z[t][2]);
+            if (t && !got.has(t)) {
+              got.add(t);
+              chipsRender();
+            }
+            trail.push([x, y]);
+            seen.add(k(x, y));
+            if (x === E && y === E) win();
+            if (!won && !dead) {
+              paint();
+              hud();
+            }
+          }
+          cv.onpointerdown = (e) => {
+            if (won) return;
+            const [x, y] = cell(e),
+              l = trail[trail.length - 1];
+            cv.setPointerCapture(e.pointerId);
+            if (Math.abs(x - 1) <= 1 && Math.abs(y - 1) <= 1) {
+              dead = false;
+              drag = true;
+              trail = [[1, 1]];
+              seen = new Set(["1,1"]);
+              got = new Set();
+              chipsRender();
+              last = [1, 1];
+              e.preventDefault();
+              ui.say("", "Путь прокладывается...");
+              paint();
+              hud();
+              return;
+            }
+            if (Math.abs(x - l[0]) <= 2 && Math.abs(y - l[1]) <= 2) {
+              dead = false;
+              drag = true;
+              last = l;
+              e.preventDefault();
+              ui.say("", "Путь прокладывается...");
+              paint();
+              hud();
+              return;
+            }
+            const i = trail.findIndex((p) => p[0] === x && p[1] === y);
+            if (i >= 0) {
+              trail = trail.slice(0, i + 1);
+              seen = new Set(trail.map((p) => k(p[0], p[1])));
+              recount();
+              dead = false;
+              drag = true;
+              last = [x, y];
+              e.preventDefault();
+              ui.say("", "Откат. Путь можно продолжить.");
+              paint();
+              hud();
+              return;
+            }
+            if (!dead) ui.say("", "Нужно нажать на линию.");
+          };
+          cv.onpointermove = (e) => {
+            if (!drag || won || dead) return;
+            e.preventDefault();
+            const [x, y] = cell(e);
+            if (!last) {
+              last = [x, y];
+              return;
+            }
+            const dx = x - last[0],
+              dy = y - last[1],
+              steps = Math.max(Math.abs(dx), Math.abs(dy));
+            for (let i = 1; i <= steps; i++) {
+              extend(
+                Math.round(last[0] + (dx * i) / steps),
+                Math.round(last[1] + (dy * i) / steps),
+              );
+              if (!drag || dead) return;
+            }
+            last = [x, y];
+          };
+          cv.onpointerup = cv.onpointercancel = () => {
+            if (!drag) return;
+            drag = false;
+            last = null;
+            if (!won && !dead) ui.say("", "Путь можно продолжить.");
+          };
+          watch(ui.stage, () => {
+            if (grid) {
+              size();
+              paint();
+            }
+          });
+          setup(0);
+        };
+
+        const Riddle = (host, done) => {
+          const R0 = [
+            {
+              q: "Появляется, когда есть свет, и пропадает, когда его нет. Весь день идёт за тобой, а ночью пропадает.",
+              a: "тень",
+              l: "Т",
+            },
+            {
+              q: "Не совсем кот и не совсем рыба, а хвост будто из чешуи. Одни клянутся, что с ним можно поговорить, другие видели только тень на воде.",
+              a: "утопец",
+              l: "У",
+            },
+            {
+              q: "Лепят из глины, сушат у огня, потом разрисовывают. Носят не для красоты, а чтобы нечисть прошла мимо.",
+              a: "маска",
+              l: "М",
+            },
+            {
+              q: "Носят в зубах и прячут от чужих. Считается, что пока она с тобой, ты не один.",
+              a: "амулет",
+              l: "А",
+            },
+            {
+              q: "Наступает, когда прячется солнце, и уходит с первым лучом.",
+              a: "ночь",
+              l: "Н",
+            },
+          ];
+          let seed = load("riddle_user_seed", 0);
+          if (!seed) {
+            seed = (Math.random() * 0xffffffff) >>> 0 || 1;
+            save("riddle_user_seed", seed);
+          }
+          const R = shuf(R0, rng(seed));
+          const FIN = "ТУМАН",
+            key = "riddle_lv2";
+          const norm = (s) =>
+            String(s)
+              .toLowerCase()
+              .trim()
+              .replace(/ё/g, "е")
+              .replace(/[^a-zа-я0-9]/g, "");
+          const fin = new Set(
+            localStorage.getItem("riddle_done") === "1" ? R.keys() : load(key, []),
+          );
+          let cur = 0,
+            check = () => {};
+          const first = () => {
+            let i = 0;
+            while (i < R.length && fin.has(i)) i++;
+            return i;
+          };
+          const ui = shell(host, R.length, (i) => {
+              if (i === first()) setup(i);
+            }),
+            bNext = btn("Дальше", "", next),
+            bCheck = btn("Проверить", "primary", () => check());
+          ui.stage.classList.add("col");
+          const box = document.createElement("div");
+          box.className = "letters";
+          ui.acts.after(box);
+
+          const tiles = () =>
+            '<div class="tiles-label">Буквы</div><div class="tiles">' +
+            R.map(
+              (r, i) =>
+                '<span class="tile' +
+                (fin.has(i) ? " on" : "") +
+                '">' +
+                (fin.has(i) ? r.l : "?") +
+                "</span>",
+            ).join("") +
+            "</div>";
+          function refresh() {
+            ui.tabs((i) => fin.has(i), cur, (i) => i !== first());
+            ui.left("Пройдено <b>" + fin.size + " / " + R.length + "</b>");
+            ui.right("");
+            bNext.disabled = !fin.has(cur);
+            bNext.className = "btn" + (fin.has(cur) ? " primary" : "");
+            bCheck.disabled = fin.has(cur);
+          }
+          function lock(f, i) {
+            f.value = R[i].a;
+            f.disabled = true;
+            f.closest(".riddle").classList.add("solved");
+          }
+          function setup(i) {
+            cur = i;
+            ui.acts.innerHTML = "";
+            ui.acts.append(bCheck, bNext);
+            ui.stage.style.display = "";
+            ui.stage.innerHTML =
+              '<div class="riddle"><p>' +
+              R[i].q +
+              '</p><input class="field" autocomplete="off"></div>';
+            box.innerHTML = tiles();
+            const f = $(".field", host);
+            if (fin.has(i)) {
+              check = () => {};
+              lock(f, i);
+              ui.say("good", "Загадка разгадана.", "Можно перейти дальше.");
+            } else {
+              ui.say("", "Нужно написать ответ");
+              const test = (loud) => {
+                if (fin.has(i)) return;
+                if (norm(f.value) !== norm(R[i].a)) {
+                  if (loud && f.value.trim()) {
+                    const r = $(".riddle", host);
+                    r.classList.remove("shake");
+                    void r.offsetWidth;
+                    r.classList.add("shake");
+                    ui.say("bad", "Ответ неверный. Стоит подумать ещё.");
+                  }
+                  return;
+                }
+                fin.add(i);
+                save(key, [...fin]);
+                lock(f, i);
+                const t = host.querySelectorAll(".tile")[i];
+                t.textContent = R[i].l;
+                t.classList.add("on");
+                ui.say("good", "Верно!", "Можно перейти дальше.");
+                refresh();
+              };
+              check = () => test(true);
+              f.addEventListener("input", () => test(false));
+              f.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  test(true);
+                }
+              });
+            }
+            refresh();
+          }
+          function next() {
+            if (!fin.has(cur)) return;
+            if (cur + 1 < R.length) return setup(cur + 1);
+            word();
+          }
+          function word() {
+            ui.stage.style.display = "none";
+            box.innerHTML = tiles();
+            ui.acts.innerHTML = "";
+            ui.right(
+              "Слово <b>" +
+                (localStorage.getItem("riddle_done") === "1" ? FIN : "?") +
+                "</b>",
+            );
+            if (localStorage.getItem("riddle_done") === "1") {
+              ui.acts.append(
+                btn("Сбросить", "", () => {
+                  localStorage.removeItem("riddle_done");
+                  save(key, []);
+                  renderList();
+                  Riddle(host, done);
+                }),
+              );
+              ui.say("good", "Слово «" + FIN + "» собрано.", "Задание решено.");
+              return;
+            }
+            const w = document.createElement("input");
+            w.className = "field word";
+            w.placeholder = "СЛОВО";
+            w.autocomplete = "off";
+            const go = () => {
+              if (norm(w.value) !== norm(FIN)) {
+                ui.say("bad", "Слово неверное.", "Можно попробовать ещё раз.");
+                w.value = "";
+                return;
+              }
+              localStorage.setItem("riddle_done", "1");
+              renderList();
+              finale(host, "Слово «" + FIN + "» собрано.", done);
+            };
+            w.addEventListener("keydown", (e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                go();
+              }
+            });
+            ui.acts.append(w, btn("Разгадать", "primary", go));
+            ui.say("", "Все буквы собраны.", "Нужно сложить слово и вписать его.");
+          }
+          if (localStorage.getItem("riddle_done") === "1") {
+            cur = R.length - 1;
+            ui.tabs(() => true, -1);
+            ui.left("Пройдено <b>" + R.length + " / " + R.length + "</b>");
+            word();
+          } else setup(Math.min(first(), R.length - 1));
+        };
+
+        const TASKS = [
+          { icon: " ", run: Sea, done: () => load("sea_done::" + SEED, []).length >= 5 },
+          { icon: " ", run: Odd, done: () => Object.keys(load("odd_done::" + SEED, {})).length >= 5 },
+          {
+            icon: " ",
+            run: Pattern,
+            done: () =>
+              Object.values(load("pattern_done::v6::" + SEED, {})).filter(Boolean).length >= 8,
+          },
+          { icon: " ", run: Maze, done: () => load("maze_done::" + SEED, []).length >= 5 },
+          { icon: " ", run: Riddle, done: () => localStorage.getItem("riddle_done") === "1" },
+        ];
+
+        function renderList() {
+          const list = $("#list"),
+            all = TASKS.every((t) => t.done());
+          list.innerHTML = "";
+          TASKS.forEach((t, i) => {
+            const b = document.createElement("button"),
+              ok = t.done();
+            b.className = "item" + (ok ? " done" : "");
+            b.innerHTML = "<span>Задание " + (i + 1) + '</span>';
+            b.onclick = () => openTask(t, i);
+            list.append(b);
+          });
+          if (all) {
+            const e = document.createElement("div");
+            e.className = "all";
+            e.textContent = "Все задания выполнены";
+            list.append(e);
+          }
+        }
+        function openTask(t, i) {
+          $("#body").innerHTML =
+            '<div class="head"><h3>Задание ' +
+            (i + 1) +
+            '</h3></div><div id="game"></div>';
+          $("#bd").classList.add("open");
+          document.body.style.overflow = "hidden";
+          t.run($("#game"), closeTask);
+        }
+        function closeTask() {
+          $("#bd").classList.remove("open");
+          $("#body").innerHTML = "";
+          document.body.style.overflow = "";
+          renderList();
+        }
+        $("#close").onclick = closeTask;
+        $("#bd").onclick = (e) => {
+          if (e.target.id === "bd") closeTask();
+        };
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && $("#bd").classList.contains("open")) closeTask();
+        });
+        $("#resetAll").onclick = () => {
+          [
+            "sea_done::" + SEED,
+            "odd_done::" + SEED,
+            "odd_done::" + SEED + "::a",
+            "odd_user_seed",
+            "pattern_done::v6::" + SEED,
+            "maze_done::" + SEED,
+            "riddle_lv2",
+            "riddle_done",
+            "riddle_user_seed",
+          ].forEach((k) => localStorage.removeItem(k));
+          location.reload();
+        };
+        renderList();
+      })();
+    </script>
+  </body>
+</html>
